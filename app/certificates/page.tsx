@@ -2,20 +2,30 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, X, Search, Filter, Calendar, SlidersHorizontal, ZoomIn, ZoomOut, ChevronDown } from "lucide-react";
+import {
+  ExternalLink,
+  X,
+  Search,
+  Filter,
+  Calendar,
+  SlidersHorizontal,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
+import Image from "next/image";
 
-// -------------------------------- Types --------------------------------
+// ------------------------------ Types ------------------------------
 type Cert = {
   title: string;
   image: string;
   year: number;
   issuer: string;
-  url?: string; // verification / details
+  url?: string;
   skills?: string[];
   credentialId?: string;
 };
 
-// -------------------------------- Data --------------------------------
+// ------------------------------ Data ------------------------------
 const certs: Cert[] = [
   {
     title: "Google Project Management",
@@ -43,21 +53,25 @@ const certs: Cert[] = [
   },
 ];
 
-// -------------------------------- Helpers --------------------------------
+// ------------------------------ Helpers ------------------------------
 const uniq = (arr: string[]) => Array.from(new Set(arr));
+const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
 
-// -------------------------------- Component --------------------------------
-export default function CertificatesPageRevamp() {
+// ------------------------------ Component ------------------------------
+export default function CertificatesPage() {
   const [query, setQuery] = useState("");
   const [issuer, setIssuer] = useState<string | "all">("all");
-  const [yearFrom, setYearFrom] = useState<number>(Math.min(...certs.map((c) => c.year)));
-  const [yearTo, setYearTo] = useState<number>(Math.max(...certs.map((c) => c.year)));
+  const minYear = useMemo(() => Math.min(...certs.map((c) => c.year)), []);
+  const maxYear = useMemo(() => Math.max(...certs.map((c) => c.year)), []);
+  const [yearFrom, setYearFrom] = useState<number>(minYear);
+  const [yearTo, setYearTo] = useState<number>(maxYear);
   const [sortBy, setSortBy] = useState<"year-desc" | "year-asc" | "title">("year-desc");
   const [selected, setSelected] = useState<Cert | null>(null);
   const [zoom, setZoom] = useState(1);
+
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  // keyboard shortcuts: '/' to focus search; Esc to close modal
+  // keyboard: '/' focus search, Esc close modal
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "/") {
@@ -74,30 +88,47 @@ export default function CertificatesPageRevamp() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     const data = certs
       .filter((c) => (issuer === "all" ? true : c.issuer === issuer))
       .filter((c) => c.year >= yearFrom && c.year <= yearTo)
-      .filter((c) => (q ? `${c.title} ${c.issuer} ${c.skills?.join(" ")}`.toLowerCase().includes(q) : true));
+      .filter((c) =>
+        q ? `${c.title} ${c.issuer} ${c.skills?.join(" ")}`.toLowerCase().includes(q) : true
+      );
 
-    if (sortBy === "year-asc") return data.sort((a, b) => a.year - b.year);
-    if (sortBy === "title") return data.sort((a, b) => a.title.localeCompare(b.title));
-    return data.sort((a, b) => b.year - a.year);
+    const sorted =
+      sortBy === "year-asc"
+        ? [...data].sort((a, b) => a.year - b.year)
+        : sortBy === "title"
+        ? [...data].sort((a, b) => a.title.localeCompare(b.title))
+        : [...data].sort((a, b) => b.year - a.year);
+
+    return sorted;
   }, [issuer, yearFrom, yearTo, query, sortBy]);
 
-  // derive timeline years
-  const years = useMemo(() => uniq(certs.map((c) => String(c.year))).map(Number).sort((a, b) => b - a), []);
+  // timeline buckets
+  const years = useMemo(
+    () => uniq(certs.map((c) => String(c.year))).map(Number).sort((a, b) => b - a),
+    []
+  );
+
+  // keep year range valid
+  useEffect(() => {
+    if (yearFrom > yearTo) setYearFrom(yearTo);
+    if (yearTo < yearFrom) setYearTo(yearFrom);
+  }, [yearFrom, yearTo]);
 
   return (
-    <section className="min-h-screen py-16 px-6 md:px-12 lg:px-20 text-blue-900 dark:text-black">
-      {/* --------------------------- Header --------------------------- */}
+    <section className="min-h-screen py-16 px-6 md:px-12 lg:px-20 text-[#0f172a]">
+      {/* Header */}
       <motion.div initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-blue-800">Certificates</h1>
-        <p className="mt-2 text-black dark:text--400 max-w-3xl text-sm">
-          Just so you know, I do care about learning and continuous improvement. Here are some of the certificates I've earned to back that up.
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1d4ed8]">Certificates</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-3xl text-sm">
+          Lifelong learning, but make it useful. These are the certs I&apos;ve earned and actually apply to real work.
         </p>
       </motion.div>
 
-      {/* --------------------------- Controls --------------------------- */}
+      {/* Controls */}
       <div className="mt-8 grid gap-3 md:grid-cols-[1fr_auto_auto_auto] items-center">
         {/* Search */}
         <div className="relative">
@@ -107,17 +138,21 @@ export default function CertificatesPageRevamp() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search title, issuer, skills…"
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Search certificates"
           />
         </div>
 
-        {/* Issuer filter */}
+        {/* Issuer */}
         <div className="flex items-center gap-2">
           <Filter size={16} className="opacity-70" />
           <select
             value={issuer}
-            onChange={(e) => setIssuer(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/60"
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setIssuer((e.target.value || "all") as string | "all")
+            }
+            className="px-3 py-2 border border-gray-300 bg-white"
+            aria-label="Filter by issuer"
           >
             <option value="all">All issuers</option>
             {issuers.map((i) => (
@@ -134,16 +169,20 @@ export default function CertificatesPageRevamp() {
           <div className="flex items-center gap-2">
             <input
               type="number"
+              inputMode="numeric"
               value={yearFrom}
-              onChange={(e) => setYearFrom(Number(e.target.value))}
-              className="w-24 px-2 py-2 border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/60"
+              onChange={(e) => setYearFrom(clamp(Number(e.target.value || minYear), minYear, maxYear))}
+              className="w-24 px-2 py-2 border border-gray-300 bg-white"
+              aria-label="Year from"
             />
             <span className="opacity-60">to</span>
             <input
               type="number"
+              inputMode="numeric"
               value={yearTo}
-              onChange={(e) => setYearTo(Number(e.target.value))}
-              className="w-24 px-2 py-2 border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/60"
+              onChange={(e) => setYearTo(clamp(Number(e.target.value || maxYear), minYear, maxYear))}
+              className="w-24 px-2 py-2 border border-gray-300 bg-white"
+              aria-label="Year to"
             />
           </div>
         </div>
@@ -153,8 +192,11 @@ export default function CertificatesPageRevamp() {
           <SlidersHorizontal size={16} className="opacity-70" />
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/60"
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setSortBy(e.target.value as "year-desc" | "year-asc" | "title")
+            }
+            className="px-3 py-2 border border-gray-300 bg-white"
+            aria-label="Sort certificates"
           >
             <option value="year-desc">Sort: Newest</option>
             <option value="year-asc">Sort: Oldest</option>
@@ -163,43 +205,45 @@ export default function CertificatesPageRevamp() {
         </div>
       </div>
 
-      {/* --------------------------- Timeline --------------------------- */}
+      {/* Timeline */}
       <div className="mt-10">
-        <div className="relative pl-8 border-l-2 border-dashed border-gray-200 dark:border-gray-800">
-          {years.map((y) => (
-            <div key={y} className="mb-8">
-              <div className="-ml-[9px] w-4 h-4 rounded-full bg-blue-500" />
-              <h3 className="mt-2 text-xl font-semibold">{y}</h3>
+        <div className="relative pl-8 border-l-2 border-dashed border-gray-200">
+          {years.map((y) => {
+            const bucket = filtered.filter((c) => c.year === y);
+            return (
+              <div key={y} className="mb-10">
+                <div className="-ml-[9px] w-4 h-4 rounded-full bg-[#2563eb]" />
+                <h3 className="mt-2 text-xl font-semibold">{y}</h3>
 
-              <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.filter((c) => c.year === y).length === 0 ? (
-                  <p className="text-sm text-gray-500">No certificates matching filters for {y}.</p>
-                ) : (
-                  filtered
-                    .filter((c) => c.year === y)
-                    .map((c) => (
+                <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {bucket.length === 0 ? (
+                    <p className="text-sm text-gray-500">No certificates matching filters for {y}.</p>
+                  ) : (
+                    bucket.map((c) => (
                       <motion.button
-                        key={c.title}
+                        key={`${c.title}-${c.year}`}
                         onClick={() => {
                           setSelected(c);
                           setZoom(1);
                         }}
                         whileHover={{ y: -4 }}
-                        className="text-left group border border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/40 backdrop-blur p-3"
+                        className="text-left group border border-gray-200 bg-white p-3"
                       >
-                        <div className="relative overflow-hidden">
-                          <img
+                        <div className="relative overflow-hidden aspect-[4/3] bg-white">
+                          <Image
                             src={c.image}
                             alt={c.title}
-                            loading="lazy"
-                            className="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                            fill
+                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                            className="object-contain transition-transform duration-500 group-hover:scale-105"
                           />
                           {c.url && (
                             <a
                               href={c.url}
                               target="_blank"
+                              rel="noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2 py-1 text-xs bg-white/90 text-gray-900 border border-gray-200 hover:bg-white"
+                              className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2 py-1 text-xs bg-white/95 text-gray-900 border border-gray-200 hover:bg-white"
                             >
                               Verify <ExternalLink size={12} />
                             </a>
@@ -207,11 +251,16 @@ export default function CertificatesPageRevamp() {
                         </div>
                         <div className="mt-3">
                           <p className="text-sm font-medium">{c.title}</p>
-                          <p className="text-xs text-gray-500">{c.issuer} • {c.year}</p>
+                          <p className="text-xs text-gray-500">
+                            {c.issuer} • {c.year}
+                          </p>
                           {!!c.skills?.length && (
                             <div className="mt-2 flex flex-wrap gap-1">
                               {c.skills.slice(0, 4).map((s) => (
-                                <span key={s} className="text-[10px] px-2 py-0.5 border border-gray-300 dark:border-gray-700">
+                                <span
+                                  key={`${c.title}-${s}`}
+                                  className="text-[10px] px-2 py-0.5 border border-gray-300"
+                                >
                                   {s}
                                 </span>
                               ))}
@@ -220,14 +269,15 @@ export default function CertificatesPageRevamp() {
                         </div>
                       </motion.button>
                     ))
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* --------------------------- Modal --------------------------- */}
+      {/* Modal */}
       <AnimatePresence>
         {selected && (
           <motion.div
@@ -244,51 +294,63 @@ export default function CertificatesPageRevamp() {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.98, y: 8, opacity: 0 }}
               transition={{ type: "spring", stiffness: 220, damping: 20 }}
-              className="relative w-full max-w-5xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+              className="relative w-full max-w-5xl bg-white border border-gray-200"
+              role="dialog"
+              aria-modal
+              aria-label="Certificate details"
             >
               <button
-                className="absolute top-3 right-3 p-2 text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white"
+                className="absolute top-3 right-3 p-2 text-gray-600 hover:text-black"
                 onClick={() => setSelected(null)}
                 aria-label="Close"
               >
                 <X size={20} />
               </button>
 
-              <div className="p-5 border-b border-gray-200 dark:border-gray-800 flex flex-wrap items-center gap-3">
+              <div className="p-5 border-b border-gray-200 flex flex-wrap items-center gap-3">
                 <div>
                   <h2 className="text-xl font-semibold leading-tight">{selected.title}</h2>
-                  <p className="text-sm text-gray-500">{selected.issuer} • {selected.year}</p>
+                  <p className="text-sm text-gray-500">
+                    {selected.issuer} • {selected.year}
+                  </p>
                 </div>
                 {selected.url && (
                   <a
                     href={selected.url}
                     target="_blank"
-                    className="ml-auto inline-flex items-center gap-2 text-blue-600 hover:underline"
+                    rel="noreferrer"
+                    className="ml-auto inline-flex items-center gap-2 text-[#2563eb] hover:underline"
                   >
                     Verify credential <ExternalLink size={16} />
                   </a>
                 )}
               </div>
 
-              <div className="p-4 grid md:grid-cols-[1fr_280px] gap-4">
+              <div className="p-4 grid md:grid-cols-[1fr_300px] gap-4">
                 {/* Preview */}
-                <div className="relative bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 flex items-center justify-center min-h-[380px]">
-                  <img
-                    src={selected.image}
-                    alt={selected.title}
-                    style={{ transform: `scale(${zoom})` }}
-                    className="max-h-[70vh] object-contain transition-transform"
-                  />
+                <div className="relative bg-gray-50 border border-gray-200 flex items-center justify-center min-h-[380px]">
+                  <div className="relative w-full h-full max-h-[70vh]">
+                    <Image
+                      src={selected.image}
+                      alt={selected.title}
+                      fill
+                      className="object-contain transition-transform"
+                      style={{ transform: `scale(${zoom})` }}
+                      sizes="100vw"
+                    />
+                  </div>
                   <div className="absolute bottom-3 right-3 flex gap-2">
                     <button
                       onClick={() => setZoom((z) => Math.max(1, +(z - 0.1).toFixed(2)))}
-                      className="px-3 py-2 bg-white/90 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
+                      className="px-3 py-2 bg-white/95 border border-gray-200 text-sm"
+                      aria-label="Zoom out"
                     >
                       <ZoomOut size={16} />
                     </button>
                     <button
                       onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.1).toFixed(2)))}
-                      className="px-3 py-2 bg-white/90 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
+                      className="px-3 py-2 bg-white/95 border border-gray-200 text-sm"
+                      aria-label="Zoom in"
                     >
                       <ZoomIn size={16} />
                     </button>
@@ -296,7 +358,7 @@ export default function CertificatesPageRevamp() {
                 </div>
 
                 {/* Meta */}
-                <div className="border border-gray-200 dark:border-gray-800 p-4">
+                <div className="border border-gray-200 p-4">
                   <h3 className="font-semibold mb-2">Details</h3>
                   <dl className="space-y-2 text-sm">
                     <div className="grid grid-cols-[120px_1fr] gap-2">
@@ -324,7 +386,7 @@ export default function CertificatesPageRevamp() {
                       <h4 className="font-medium mb-1">Skills</h4>
                       <div className="flex flex-wrap gap-2">
                         {selected.skills.map((s) => (
-                          <span key={s} className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-700">
+                          <span key={`${selected.title}-${s}`} className="text-xs px-2 py-1 border border-gray-300">
                             {s}
                           </span>
                         ))}
@@ -337,7 +399,7 @@ export default function CertificatesPageRevamp() {
                     <a
                       href={selected.image}
                       download
-                      className="text-center px-3 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
+                      className="text-center px-3 py-2 border border-gray-300 hover:bg-gray-50 text-sm"
                     >
                       Download PNG
                     </a>
@@ -345,12 +407,13 @@ export default function CertificatesPageRevamp() {
                       <a
                         href={selected.url}
                         target="_blank"
-                        className="text-center px-3 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm inline-flex items-center justify-center gap-1"
+                        rel="noreferrer"
+                        className="text-center px-3 py-2 border border-gray-300 hover:bg-gray-50 text-sm inline-flex items-center justify-center gap-1"
                       >
                         Verify <ExternalLink size={14} />
                       </a>
                     ) : (
-                      <span className="text-center px-3 py-2 border border-dashed border-gray-300 dark:border-gray-700 text-sm opacity-70">
+                      <span className="text-center px-3 py-2 border border-dashed border-gray-300 text-sm opacity-70">
                         No verification link
                       </span>
                     )}
@@ -361,7 +424,6 @@ export default function CertificatesPageRevamp() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </section>
   );
 }

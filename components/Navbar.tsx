@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sun, Moon, Search, ChevronRight } from "lucide-react";
+import { Menu, X, Search, ChevronRight } from "lucide-react";
 
 const NAV_ITEMS: { name: string; href: string; desc?: string }[] = [
   { name: "Home", href: "/", desc: "Landing page" },
