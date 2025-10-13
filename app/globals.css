@@ -1,26 +1,61 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* optional, just for safety */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Hide scrollbar for Firefox */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Ensure body still scrolls */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow-y: scroll;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.animate-blink {
+  display: inline-block;
+  width: 0.6ch;
+  animation: blink 1s step-end infinite;
+}
+html, body {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+
+html,
+body {
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+a {
+  transition: all 0.2s ease-in-out;
+}
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-blink {
+  display: inline-block;
+  width: 0.5ch;
+  color: #2563eb;
+  animation: blink 1s step-end infinite;
 }
