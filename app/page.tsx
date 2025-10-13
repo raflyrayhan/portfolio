@@ -218,7 +218,7 @@ function Tilt3D({
         ref={ref}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" as any }}
+        style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" as "preserve-3d" }}
       >
         {children}
       </motion.div>
@@ -390,7 +390,7 @@ export default function HomeProfileFX() {
       {/* CTA */}
       <section className="relative max-w-5xl mx-auto px-5 sm:px-6 py-12 md:py-16">
         <div className="text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold">Let’s build responsibly, then beautifully.</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold">build responsibly, then beautifully.</h2>
           <p className="mt-3 sm:mt-4 text-gray-600 text-sm sm:text-base md:text-lg">
             Rafly is Online. Ready to connect with you anytime.
           </p>
