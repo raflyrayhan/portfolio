@@ -27,11 +27,43 @@ function useTypewriter(text: string, speed = 34) {
   return out;
 }
 
+/* ----------------------- rotating messages for hero ----------------------- */
+const MESSAGES = [
+  "Engineer, with a touch of </code>"
+] as const;
+
+function useRotatingIndex(length: number, delay = 5200) {
+  const [idx, setIdx] = useState(0);
+  const reduce = useReducedMotion();
+  useEffect(() => {
+    if (length <= 1 || reduce) return;
+    const id = setInterval(() => setIdx((v) => (v + 1) % length), delay);
+    return () => clearInterval(id);
+  }, [length, delay, reduce]);
+  return idx;
+}
+
+function HeroText({ text }: { text: string }) {
+  // warnai literal </code> jadi biru tua
+  const parts = text.split("</code>");
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((chunk, i) => (
+        <span key={i}>
+          {chunk}
+          {i < parts.length - 1 && <span style={{ color: "#1e3a8a" }}>{"</code>"}</span>}
+        </span>
+      ))}
+    </>
+  );
+}
+
 /* ----------------------- background grid (parallax micro) ----------------------- */
 function TechGridParallax() {
   const ref = useRef<HTMLDivElement | null>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, -6]); // <= 6px saja: aman & halus
+  const y = useTransform(scrollYProgress, [0, 1], [0, -6]); // ≤ 6px: aman & halus
   return (
     <motion.div ref={ref} className="fixed inset-0 -z-20 text-[#0f172a] opacity-[0.06]" style={{ y }}>
       <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -48,7 +80,6 @@ function TechGridParallax() {
 
 /* ----------------------- ultra-light noise overlay ----------------------- */
 function NoiseOverlay() {
-  // svg noise tiny; opacity kecil biar ga kotor
   const data = useMemo(
     () =>
       `url("data:image/svg+xml;utf8,${encodeURIComponent(
@@ -218,7 +249,7 @@ function Tilt3D({
         ref={ref}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" as "preserve-3d" }}
+        style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" }}
       >
         {children}
       </motion.div>
@@ -259,7 +290,10 @@ const GENERAL_PROJECTS = [
 /* ----------------------- page ----------------------- */
 export default function HomeProfileFX() {
   const reduce = useReducedMotion();
-  const headline = useTypewriter("Engineer, with a touch of </code>");
+
+  // rotating headline + typewriter
+  const rotatingIdx = useRotatingIndex(MESSAGES.length, 2100);
+  const typed = useTypewriter(MESSAGES[rotatingIdx], 34);
 
   return (
     <main className="relative min-h-screen bg-white text-[#0f172a]">
@@ -269,9 +303,9 @@ export default function HomeProfileFX() {
 
       {/* HERO */}
       <section className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-28 md:pt-32 pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 md:gap-20 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 md:gap-10 items-center">
           <Tilt3D className="mx-auto md:mx-0">
-            <div className="relative w-50 h-50 md:w-50 md:h-50">
+            <div className="relative w-40 h-40 md:w-50 md:h-50">
               <Image
                 src="/head.png"
                 alt="Rafly portrait"
@@ -289,10 +323,13 @@ export default function HomeProfileFX() {
               transition={{ duration: reduce ? 0 : 0.45 }}
               className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight tracking-tight"
             >
-              {headline} <span className="text-[#2563eb]">|</span>
+              <span className="align-middle">
+                <HeroText text={typed} />
+              </span>
+              <span className="text-[#2563eb] align-middle">|</span>
             </motion.h1>
             <p className="mt-3 text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl">
-              Two totally different worlds, one engineer.
+              Not your typical engineer
             </p>
             <div className="mt-5 flex flex-wrap gap-2 justify-center md:justify-start">
               {DISCIPLINES.map((x) => (
@@ -314,7 +351,7 @@ export default function HomeProfileFX() {
               </Magnetic>
               <Magnetic strength={9}>
                 <a className="inline-block px-5 md:px-6 py-3 border border-gray-300 hover:bg-gray-50" href="/about">
-                  Kenalan dulu
+                  About me
                 </a>
               </Magnetic>
             </div>
@@ -323,7 +360,7 @@ export default function HomeProfileFX() {
 
         {/* Quick stats */}
         <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4 text-center">
-          {[{ h: "Disciplines", v: "5+" }, { h: "Projects", v: "10+" }, { h: "Focus", v: "EPC/Cloud" }].map((s) => (
+          {[{ h: "Disciplines", v: "3+" }, { h: "Projects", v: "10+" }, { h: "Focus", v: "EPC/IT" }].map((s) => (
             <ShimmerCard key={s.h} className="p-4">
               <div className="relative z-10">
                 <div className="text-2xl font-semibold text-[#2563eb]">{s.v}</div>
@@ -338,7 +375,6 @@ export default function HomeProfileFX() {
       <section className="relative max-w-6xl mx-auto px-5 sm:px-6 pb-6 sm:pb-10">
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold">What I work on</h2>
-          <p className="text-gray-600 text-sm sm:text-base mt-2">The big three:</p>
         </div>
 
         <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
@@ -379,8 +415,8 @@ export default function HomeProfileFX() {
             { h: "Safety by default", p: "Typed API, migrasi terencana, rollback path jelas." },
           ].map((x) => (
             <Tilt3D key={x.h} max={6}>
-              <ShimmerCard className="p-5 sm:p-6 bg-blue-800">
-                <h3 className="font-medium text-[#2563eb] text-center text-bold">{x.h}</h3>
+              <ShimmerCard className="p-5 sm:p-6 bg-white">
+                <h3 className="font-bold text-[#2563eb] text-center">{x.h}</h3>
               </ShimmerCard>
             </Tilt3D>
           ))}
@@ -392,7 +428,7 @@ export default function HomeProfileFX() {
         <div className="text-center">
           <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold">build responsibly, then beautifully.</h2>
           <p className="mt-3 sm:mt-4 text-gray-600 text-sm sm:text-base md:text-lg">
-            Rafly is Online. Ready to connect with you anytime.
+            let us catch up and build something great together.
           </p>
           <div className="mt-6 sm:mt-8 flex items-center justify-center gap-3">
             <Magnetic>
@@ -408,6 +444,8 @@ export default function HomeProfileFX() {
           </div>
         </div>
       </section>
+
+      <ScrollHint />
     </main>
   );
 }
