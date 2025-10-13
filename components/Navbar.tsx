@@ -7,11 +7,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Search, ChevronRight } from "lucide-react";
 
 const NAV_ITEMS: { name: string; href: string; desc?: string }[] = [
-  { name: "Home", href: "/", desc: "Landing page" },
-  { name: "About", href: "/about", desc: "Who I am" },
-  { name: "Projects", href: "/projects", desc: "What I build" },
-  { name: "Certificates", href: "/certificates", desc: "Proof of work" },
-  { name: "Contact", href: "/contact", desc: "Let’s talk" },
+  
+  { name: "About Me", href: "/about", desc: "Who I am" },
+  { name: "Things I do", href: "/projects", desc: "What I build" },
+  { name: "🏠︎", href: "/", desc: "Landing page" },
+  { name: "I'm legit", href: "/certificates", desc: "Proof of work" },
+  { name: "Where to find me", href: "/contact", desc: "Let’s talk" },
 ];
 
 export default function Navbar() {
@@ -87,7 +88,7 @@ export default function Navbar() {
           <div className="h-14 md:h-16 flex items-center justify-between">
             {/* Brand */}
             <Link href="/" className="font-semibold tracking-tight text-lg md:text-xl">
-              .dev
+              rrm<span className="text-blue-800">.dev</span>
             </Link>
 
             {/* Desktop Links */}

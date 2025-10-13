@@ -459,13 +459,6 @@ export default function ProjectsPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ----------------------------- FOOTER MINI-HELP ----------------------------- */}
-      <Section className="py-10 px-6 md:px-16 text-center text-sm text-gray-500">
-        <p>
-          Pro tip: Use ←/→ to switch featured projects. Press 1–3 to switch company sites. Press Esc to close the preview.
-        </p>
-      </Section>
     </div>
   );
 }

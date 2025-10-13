@@ -1,204 +1,418 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
+import Image from "next/image";
 
-function useTypewriter(text: string, speed = 42) {
-  const [displayed, setDisplayed] = useState("");
+/* ----------------------- tiny typewriter ----------------------- */
+function useTypewriter(text: string, speed = 34) {
+  const [out, setOut] = useState("");
   useEffect(() => {
     let i = 0;
     const id = setInterval(() => {
-      setDisplayed(text.slice(0, i + 1));
-      i++;
+      setOut(text.slice(0, i + 1));
+      i += 1;
       if (i >= text.length) clearInterval(id);
     }, speed);
     return () => clearInterval(id);
   }, [text, speed]);
-  return displayed;
+  return out;
 }
 
-function GridBG() {
+/* ----------------------- background grid (parallax micro) ----------------------- */
+function TechGridParallax() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [0, -6]); // <= 6px saja: aman & halus
   return (
-    <svg className="absolute inset-0 w-full h-full -z-10 opacity-[0.08]" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-          <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.75" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-    </svg>
+    <motion.div ref={ref} className="fixed inset-0 -z-20 text-[#0f172a] opacity-[0.06]" style={{ y }}>
+      <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.8" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
+    </motion.div>
   );
 }
 
-function GradientBlob({ className = "" }: { className?: string }) {
+/* ----------------------- ultra-light noise overlay ----------------------- */
+function NoiseOverlay() {
+  // svg noise tiny; opacity kecil biar ga kotor
+  const data = useMemo(
+    () =>
+      `url("data:image/svg+xml;utf8,${encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'>
+           <filter id='n'>
+             <feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/>
+             <feColorMatrix type='saturate' values='0'/>
+             <feComponentTransfer><feFuncA type='table' tableValues='0 0 0 .035 .07 .035 0 0 0'/></feComponentTransfer>
+           </filter>
+           <rect width='100%' height='100%' filter='url(%23n)'/>
+         </svg>`
+      )}")`,
+    []
+  );
   return (
     <div
-      className={`pointer-events-none absolute blur-3xl opacity-60 ${className}`}
+      className="pointer-events-none fixed inset-0 -z-10 opacity-[0.12] mix-blend-multiply"
+      style={{ backgroundImage: data, backgroundSize: "120px 120px" }}
+    />
+  );
+}
+
+/* ----------------------- spotlight cursor (spring) ----------------------- */
+function Spotlight() {
+  const reduce = useReducedMotion();
+  const enabled = typeof window !== "undefined" && matchMedia("(pointer:fine)").matches && !reduce;
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 120, damping: 18, mass: 0.4 });
+  const sy = useSpring(y, { stiffness: 120, damping: 18, mass: 0.4 });
+
+  useEffect(() => {
+    if (!enabled) return;
+    const onMove = (e: MouseEvent) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [enabled, x, y]);
+
+  if (!enabled) return null;
+
+  return (
+    <motion.div
+      className="fixed -z-10 pointer-events-none"
       style={{
+        left: sx,
+        top: sy,
+        width: 420,
+        height: 420,
+        translateX: "-50%",
+        translateY: "-50%",
         background:
-          "radial-gradient(35% 35% at 50% 50%, rgba(37,99,235,0.25) 0%, rgba(56,189,248,0.18) 45%, rgba(255,255,255,0) 70%)",
+          "radial-gradient(220px 220px at center, rgba(37,99,235,0.14), rgba(56,189,248,0.08) 40%, rgba(255,255,255,0) 70%)",
+        filter: "blur(20px)",
       }}
     />
   );
 }
 
-export default function HomePageRevamp() {
+/* ----------------------- magnetic wrapper (for CTA) ----------------------- */
+function Magnetic({
+  children,
+  strength = 12,
+}: {
+  children: React.ReactNode;
+  strength?: number;
+}) {
+  const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement | null>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness: 180, damping: 16, mass: 0.3 });
+  const sy = useSpring(my, { stiffness: 180, damping: 16, mass: 0.3 });
 
-  const sections = 4;
-  const containerHeight = `${sections * 100}vh`;
+  if (reduce || typeof window === "undefined" || !matchMedia("(pointer:fine)").matches) {
+    return <div>{children}</div>;
+  }
 
-  const yHero = useTransform(scrollYProgress, [0, 0.25], ["0%", "-60%"]);
-  const yWork = useTransform(scrollYProgress, [0.2, 0.85], ["100%", "0%"]);
-  const yCTA = useTransform(scrollYProgress, [0.8, 1], ["100%", "0%"]);
-
-  const line1 = useTypewriter("Where engineering meets </code>");
-  const line2 = useTypewriter("What I’m shipping lately.", 32);
-  const line3 = useTypewriter("Built from the field, for the cloud.", 34);
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    mx.set((dx / r.width) * strength);
+    my.set((dy / r.height) * strength);
+  };
+  const onLeave = () => {
+    mx.set(0);
+    my.set(0);
+  };
 
   return (
-    <div ref={ref} className="relative" style={{ height: containerHeight }}>
-      <motion.section
-        style={{ y: yHero }}
-        className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-white text-[#0f172a]"
-      >
-        <GridBG />
-        <GradientBlob className="w-[50vw] h-[50vw] left-[-10vw] top-[-10vh]" />
-        <GradientBlob className="w-[40vw] h-[40vw] right-[-8vw] bottom-[10vh]" />
+    <motion.div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ x: sx, y: sy }}>
+      {children}
+    </motion.div>
+  );
+}
 
-        <div className="px-6 text-center max-w-4xl">
-          <motion.h1
-            initial={{ y: -16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl md:text-5xl font-bold leading-tight tracking-tight"
-          >
-            {line1} <span className="text-[#2563eb]">|</span>
-          </motion.h1>
-          <p className="text-base md:text-xl text-gray-600 mt-5 leading-relaxed">
-            Thanks for stopping by. Welcome to my digital portofolio.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="/projects"
-              className="px-6 py-3 bg-[#2563eb] text-white hover:brightness-95"
-            >
-              See projects
-            </a>
-            <a
-              href="/about"
-              className="px-6 py-3 border border-gray-300 hover:bg-gray-50"
-            >
-              About me
-            </a>
-          </div>
-          <div className="mt-8 text-xs text-gray-500">Scroll to explore ↓</div>
-        </div>
-      </motion.section>
-
-      <motion.section
-        style={{ y: yWork }}
-        className="fixed inset-0 z-40 flex items-center justify-center bg-[#f6f8fb] text-gray-800"
-      >
-        <GridBG />
-        <div className="relative z-10 w-full max-w-7xl px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-5xl font-semibold text-center mb-6"
-          >
-            {line2} <span className="text-[#2563eb]">|</span>
-          </motion.h2>
-          <p className="text-center text-gray-600 max-w-3xl mx-auto mb-10">
-            Here’s a glimpse of the ecosystem I’m actively shaping — blending engineering, software, and design
-            into scalable, real‑world tools.
-          </p>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                title: "Portal‑IMX 2025",
-                desc: "A fully cloud‑based Engineering Document Management System (EDMS) tailored for EPC projects. Built with Next.js, NestJS, Prisma, and GCP for version‑controlled document handling and task tracking.",
-                href: "/projects#portal-imx",
-              },
-              {
-                title: "Instrument Studio",
-                desc: "Python‑driven application for instrument datasheet automation, control valve sizing, and process data calculations — now evolving into a web‑connected environment with Pyodide integration.",
-                href: "/projects#instrument-studio",
-              },
-              {
-                title: "Corporate Web Ecosystem",
-                desc: "Suite of modern, responsive websites for the energy & EPC sector — emphasizing performance, SEO, and modern UI built with Next.js, Tailwind, and clean design systems.",
-                href: "/projects#websites",
-              },
-            ].map((p) => (
-              <motion.a
-                key={p.title}
-                href={p.href}
-                whileHover={{ y: -8 }}
-                transition={{ type: "spring", stiffness: 220, damping: 20 }}
-                className="block p-6 bg-white/95 backdrop-blur border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.05)]"
-              >
-                <h3 className="font-semibold text-lg text-[#2563eb] mb-2">{p.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{p.desc}</p>
-              </motion.a>
-            ))}
-          </div>
-
-          <div className="mt-10 grid md:grid-cols-2 gap-6">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-6 bg-white shadow-md border border-gray-100"
-            >
-              <h4 className="font-semibold text-lg text-[#2563eb] mb-2">Procurement & MTO Integration</h4>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Developing digital pipelines connecting Material Take‑Offs (MTO) with procurement workflows. The goal: streamline instrument BOMs, vendor selection, and cost evaluation into an automated process.
-              </p>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-6 bg-white shadow-md border border-gray-100"
-            >
-              <h4 className="font-semibold text-lg text-[#2563eb] mb-2">Cloud Infrastructure Automation</h4>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Deploying microservices on Google Cloud Run with containerized workflows — full DevOps chain including Cloud SQL, Artifact Registry, and CI/CD automation using Cloud Build.
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="mt-12 text-center">
-            <a href="/projects" className="inline-block px-5 py-2 border border-gray-300 hover:bg-white">View all projects</a>
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section
-        style={{ y: yCTA }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-white text-[#0f172a]"
-      >
-        <GridBG />
-        <div className="relative z-10 max-w-3xl px-6 text-center">
-          <h2 className="text-4xl md:text-6xl font-semibold mb-4">
-            {line3} <span className="text-[#38bdf8]">|</span>
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Let’s build systems that think smarter, connect deeper, and simplify the complex.
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <a href="/contact" className="px-7 py-3 bg-[#2563eb] text-white hover:brightness-95">Get in touch</a>
-            <a href="/certificates" className="px-7 py-3 border border-gray-300 hover:bg-gray-50">Certificates</a>
-          </div>
-        </div>
-      </motion.section>
-
-      <ScrollHint />
+/* ----------------------- shimmer card ----------------------- */
+function ShimmerCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`relative overflow-hidden border border-gray-100 bg-white ${className}`}>
+      {/* shimmer layer (mask) */}
+      <div className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(75deg,transparent,black,transparent)] [background:linear-gradient(75deg,rgba(37,99,235,.08),rgba(56,189,248,.06),rgba(37,99,235,.08))] animate-[shimmer_3.6s_linear_infinite]" />
+      {children}
+      <style jsx global>{`
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-60%);
+          }
+          100% {
+            transform: translateX(60%);
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
+/* ----------------------- tilt container (3D on hover) ----------------------- */
+function Tilt3D({
+  children,
+  max = 10,
+  className = "",
+}: {
+  children: React.ReactNode;
+  max?: number;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement | null>(null);
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const srx = useSpring(rx, { stiffness: 200, damping: 18, mass: 0.4 });
+  const sry = useSpring(ry, { stiffness: 200, damping: 18, mass: 0.4 });
+
+  if (reduce || typeof window === "undefined" || !matchMedia("(pointer:fine)").matches) {
+    return <div className={className}>{children}</div>;
+  }
+
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    ry.set(px * max);
+    rx.set(-py * max);
+  };
+  const onLeave = () => {
+    rx.set(0);
+    ry.set(0);
+  };
+
+  return (
+    <div className={`[perspective:1000px] ${className}`}>
+      <motion.div
+        ref={ref}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" as any }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ----------------------- data ----------------------- */
+const DISCIPLINES = [
+  { k: "Instrumentation", d: "P&ID • Loop • Datasheet" },
+  { k: "Software", d: "Next.js • NestJS • Prisma" },
+  { k: "Cloud", d: "GCP • Docker • K8s" },
+  { k: "Project", d: "Agile • Stakeholders" },
+  { k: "Quality", d: "Docs • Versioning" },
+];
+
+const GENERAL_PROJECTS = [
+  {
+    title: "Engineering Platforms",
+    desc: "EDMS & workflow tools untuk EPC: versioning, review, traceability.",
+    href: "/projects#portal-imx",
+    img: "/imxportal.png",
+  },
+  {
+    title: "Instrumentation Tooling",
+    desc: "Datasheet automation, sizing, kalkulasi proses (Python → web).",
+    href: "/projects#instrument-studio",
+    img: "/studioinst.png",
+  },
+  {
+    title: "Web & Cloud Systems",
+    desc: "Website & backend modern: cepat, SEO-friendly, observable.",
+    href: "/projects#websites",
+    img: "/website.png",
+  },
+];
+
+/* ----------------------- page ----------------------- */
+export default function HomeProfileFX() {
+  const reduce = useReducedMotion();
+  const headline = useTypewriter("Engineer, with a touch of </code>");
+
+  return (
+    <main className="relative min-h-screen bg-white text-[#0f172a]">
+      <TechGridParallax />
+      <NoiseOverlay />
+      <Spotlight />
+
+      {/* HERO */}
+      <section className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-28 md:pt-32 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 md:gap-20 items-center">
+          <Tilt3D className="mx-auto md:mx-0">
+            <div className="relative w-50 h-50 md:w-50 md:h-50">
+              <Image
+                src="/head.png"
+                alt="Rafly portrait"
+                fill
+                sizes="180px"
+                className="object-cover grayscale hover:grayscale-0 transition"
+                priority
+              />
+            </div>
+          </Tilt3D>
+          <div className="text-center md:text-left">
+            <motion.h1
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: reduce ? 0 : 0.45 }}
+              className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight tracking-tight"
+            >
+              {headline} <span className="text-[#2563eb]">|</span>
+            </motion.h1>
+            <p className="mt-3 text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl">
+              Two totally different worlds, one engineer.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2 justify-center md:justify-start">
+              {DISCIPLINES.map((x) => (
+                <motion.span
+                  key={x.k}
+                  whileHover={{ y: -2 }}
+                  className="px-3 py-1.5 text-xs border border-gray-200 bg-white"
+                  title={x.d}
+                >
+                  {x.k}
+                </motion.span>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
+              <Magnetic>
+                <a className="inline-block px-5 md:px-6 py-3 bg-[#2563eb] text-white hover:brightness-95" href="/projects">
+                  See work
+                </a>
+              </Magnetic>
+              <Magnetic strength={9}>
+                <a className="inline-block px-5 md:px-6 py-3 border border-gray-300 hover:bg-gray-50" href="/about">
+                  Kenalan dulu
+                </a>
+              </Magnetic>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick stats */}
+        <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4 text-center">
+          {[{ h: "Disciplines", v: "5+" }, { h: "Projects", v: "10+" }, { h: "Focus", v: "EPC/Cloud" }].map((s) => (
+            <ShimmerCard key={s.h} className="p-4">
+              <div className="relative z-10">
+                <div className="text-2xl font-semibold text-[#2563eb]">{s.v}</div>
+                <div className="text-xs text-gray-500">{s.h}</div>
+              </div>
+            </ShimmerCard>
+          ))}
+        </div>
+      </section>
+
+      {/* General Projects (singkat) */}
+      <section className="relative max-w-6xl mx-auto px-5 sm:px-6 pb-6 sm:pb-10">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold">What I work on</h2>
+          <p className="text-gray-600 text-sm sm:text-base mt-2">The big three:</p>
+        </div>
+
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
+          {GENERAL_PROJECTS.map((p) => (
+            <Tilt3D key={p.title} max={8}>
+              <a href={p.href} className="block">
+                <ShimmerCard className="bg-white">
+                  <div className="relative w-full aspect-[16/10]">
+                    <Image
+                      src={p.img}
+                      alt={p.title}
+                      fill
+                      className="object-contain p-3"
+                      sizes="(min-width:1024px) 30vw, 100vw"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-semibold text-base sm:text-lg text-[#2563eb]">{p.title}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">{p.desc}</p>
+                  </div>
+                </ShimmerCard>
+              </a>
+            </Tilt3D>
+          ))}
+        </div>
+      </section>
+
+      {/* Work discipline highlights */}
+      <section className="relative max-w-6xl mx-auto px-5 sm:px-6 py-8">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-semibold">How I work</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {[
+            { h: "Clarity over cleverness", p: "Docs singkat, diagram seperlunya, keputusan tercatat." },
+            { h: "Automate the repeatable", p: "CI/CD, template, linting → energi fokus ke hal penting." },
+            { h: "Measure, then optimize", p: "Observability dulu (logs, traces, metrics) baru tuning." },
+            { h: "Safety by default", p: "Typed API, migrasi terencana, rollback path jelas." },
+          ].map((x) => (
+            <Tilt3D key={x.h} max={6}>
+              <ShimmerCard className="p-5 sm:p-6 bg-blue-800">
+                <h3 className="font-medium text-[#2563eb] text-center text-bold">{x.h}</h3>
+              </ShimmerCard>
+            </Tilt3D>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative max-w-5xl mx-auto px-5 sm:px-6 py-12 md:py-16">
+        <div className="text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold">Let’s build responsibly, then beautifully.</h2>
+          <p className="mt-3 sm:mt-4 text-gray-600 text-sm sm:text-base md:text-lg">
+            Rafly is Online. Ready to connect with you anytime.
+          </p>
+          <div className="mt-6 sm:mt-8 flex items-center justify-center gap-3">
+            <Magnetic>
+              <a href="/contact" className="px-6 sm:px-7 py-3 bg-[#2563eb] text-white hover:brightness-95">
+                Get in touch
+              </a>
+            </Magnetic>
+            <Magnetic strength={9}>
+              <a href="/projects" className="px-6 sm:px-7 py-3 border border-gray-300 hover:bg-gray-50">
+                See portfolio
+              </a>
+            </Magnetic>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+/* ----------------------- scroll hint ----------------------- */
 function ScrollHint() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
@@ -214,7 +428,7 @@ function ScrollHint() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.25 }}
           className="fixed bottom-6 left-1/2 -translate-x-1/2 text-gray-500 text-sm z-[60]"
         >
           scroll ↓
