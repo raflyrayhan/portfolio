@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Rafly Maulana | Instrument & Cloud Engineer",
+  title: "Rafly's",
   description: "Portfolio of Rafly Maulana — Instrumentation, Control, and Cloud Engineer.",
 };
 
