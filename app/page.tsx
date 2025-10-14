@@ -269,19 +269,19 @@ const DISCIPLINES = [
 const GENERAL_PROJECTS = [
   {
     title: "Engineering Platforms",
-    desc: "EDMS & workflow tools untuk EPC: versioning, review, traceability.",
+    desc: "EDMS, Piping Calc, CFD Calcs, & more.",
     href: "/projects#portal-imx",
     img: "/imxportal.png",
   },
   {
     title: "Instrumentation Tooling",
-    desc: "Datasheet automation, sizing, kalkulasi proses (Python → web).",
+    desc: "Autamation, calculation, & documentation for instrument engineers.",
     href: "/projects#instrument-studio",
     img: "/studioinst.png",
   },
   {
     title: "Web & Cloud Systems",
-    desc: "Website & backend modern: cepat, SEO-friendly, observable.",
+    desc: "UI/UX, frontend, backend, & infra for various needs.",
     href: "/projects#websites",
     img: "/website.png",
   },
