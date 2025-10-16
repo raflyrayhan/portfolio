@@ -360,7 +360,7 @@ export default function HomeProfileFX() {
 
         {/* Quick stats */}
         <div className="mt-8 grid grid-cols-3 gap-3 sm:gap-4 text-center">
-          {[{ h: "Disciplines", v: "3+" }, { h: "Projects", v: "10+" }, { h: "Focus", v: "EPC/IT" }].map((s) => (
+          {[{ h: "Disciplines", v: "3+" }, { h: "Projects", v: "10+" }, { h: "Focus", v: "I&C/IT" }].map((s) => (
             <ShimmerCard key={s.h} className="p-4">
               <div className="relative z-10">
                 <div className="text-2xl font-semibold text-[#2563eb]">{s.v}</div>
