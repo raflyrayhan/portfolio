@@ -29,7 +29,7 @@ type Cert = {
 const certs: Cert[] = [
   {
     title: "Google Project Management",
-    image: "/images/certificates/google-pm.png",
+    image: "/images/certificates/google-pm.jpg",
     year: 2025,
     issuer: "Google",
     url: "https://www.coursera.org/professional-certificates/google-project-management",
@@ -37,7 +37,15 @@ const certs: Cert[] = [
   },
   {
     title: "IBM Microservices with Istio & Kubernetes",
-    image: "/images/certificates/ibm.png",
+    image: "/images/certificates/ibm2.jpg",
+    year: 2022,
+    issuer: "IBM",
+    url: "https://www.coursera.org/learn/istio-kubernetes-microservices",
+    skills: ["Kubernetes", "Istio", "Microservices", "Cloud"],
+  },
+  {
+    title: "IBM Containers, Kubernetes and OpenShift V2",
+    image: "/images/certificates/ibm1.jpg",
     year: 2022,
     issuer: "IBM",
     url: "https://www.coursera.org/learn/istio-kubernetes-microservices",
@@ -45,12 +53,21 @@ const certs: Cert[] = [
   },
   {
     title: "Electrical Engineering in Theory",
-    image: "/images/certificates/alison.png",
+    image: "/images/certificates/alison1.png",
     year: 2024,
     issuer: "Alison",
     url: "https://alison.com/",
     skills: ["Circuits", "Signals", "Power"],
   },
+  {
+    title: "P&ID Drafting and Design",
+    image: "/images/certificates/P&ID.png",
+    year: 2024,
+    issuer: "Alison",
+    url: "https://alison.com/",
+    skills: ["Circuits", "Signals", "Power"],
+  },
+  
 ];
 
 // ------------------------------ Helpers ------------------------------
