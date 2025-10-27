@@ -101,20 +101,12 @@ export default function HomePage() {
 
             {/* primary CTAs */}
             <div className="mt-7 flex flex-wrap gap-3">
-              <Magnetic>
-                <Link
-                  href="/projects"
-                  className="rounded-xl px-6 py-3 bg-blue-600 text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
-                >
-                  See work
-                </Link>
-              </Magnetic>
               <Magnetic strength={9}>
                 <Link
                   href="/about"
                   className="rounded-xl px-6 py-3 border border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
                 >
-                  About me
+                  This button is meant to be clicked
                 </Link>
               </Magnetic>
             </div>
