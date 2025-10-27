@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export function NavBar() {
   const [open, setOpen] = useState(false);
@@ -18,12 +19,20 @@ export function NavBar() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Brand */}
-        <Link
-          href="/"
-          className="font-semibold tracking-tight text-slate-900 hover:text-blue-600 transition-colors"
-        >
-          rafly.dev
-        </Link>
+       <Link
+  href="/"
+  aria-label="Go to home"
+  className="inline-flex items-center"
+>
+  <Image
+    src="/head.png"
+    alt="Rafly — Home"
+    width={32}
+    height={32}
+    priority
+    className="h-14 w-14 rounded-md object-cover"
+  />
+</Link>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-700">
