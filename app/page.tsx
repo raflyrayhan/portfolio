@@ -154,17 +154,10 @@ export default function HomePage() {
                   href="/about"
                   className="rounded-xl px-6 py-3 border border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
                 >
-                  About me
+                  Let me introduce myself
                 </Link>
               </Magnetic>
-              <Magnetic>
-                <Link
-                  href="/projects"
-                  className="rounded-xl px-6 py-3 bg-blue-600 text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
-                >
-                  See work
-                </Link>
-              </Magnetic>
+              
             </motion.div>
           </motion.div>
 
@@ -177,7 +170,7 @@ export default function HomePage() {
             style={{ y: imgY }}
           >
             <Tilt3D max={8}>
-              <div className="relative w-full aspect-[1/1] rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-[0_8px_30px_rgba(2,6,23,0.08)]">
+              <div className="relative w-full aspect-[1/1] pl-2.5 rounded-b-none overflow-hidden ring-1 ring-slate-200 shadow-[0_8px_30px_rgba(2,6,23,0.08)]">
                 <Image
                   src="/ilustrasi.png"
                   alt="Rafly illustration"
@@ -345,14 +338,7 @@ export default function HomePage() {
               Get in touch
             </Link>
           </Magnetic>
-          <Magnetic strength={9}>
-            <Link
-              href="/projects"
-              className="rounded-xl px-6 sm:px-7 py-3 border border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
-            >
-              See portfolio
-            </Link>
-          </Magnetic>
+        
         </motion.div>
       </section>
 
