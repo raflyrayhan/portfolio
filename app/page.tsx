@@ -8,6 +8,7 @@ import {
   type Variants,
   useScroll,
   useTransform,
+  type MotionValue,
 } from "framer-motion";
 import { HeroText, useTypewriter } from "@/components/Typewriter";
 import { Tilt3D } from "@/components/Tilt3D";
@@ -51,9 +52,13 @@ export default function HomePage() {
   const reduce = useReducedMotion();
   const typed = useTypewriter(MESSAGES[0], 28);
 
-  // subtle parallax for hero art
+  // subtle parallax for hero art (disabled if reduced motion)
   const { scrollY } = useScroll();
-  const imgY = useTransform(scrollY, [0, 300], [0, reduce ? 0 : -24]);
+  const imgY: MotionValue<number> = useTransform(
+    scrollY,
+    [0, 300],
+    [0, reduce ? 0 : -24]
+  );
 
   return (
     <div className="relative bg-white text-slate-900 overflow-x-hidden">
@@ -152,7 +157,14 @@ export default function HomePage() {
                   About me
                 </Link>
               </Magnetic>
-              
+              <Magnetic>
+                <Link
+                  href="/projects"
+                  className="rounded-xl px-6 py-3 bg-blue-600 text-white hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
+                >
+                  See work
+                </Link>
+              </Magnetic>
             </motion.div>
           </motion.div>
 
@@ -162,7 +174,7 @@ export default function HomePage() {
             initial="hidden"
             animate="show"
             className="order-first md:order-none"
-            style={{ y: imgY as any }}
+            style={{ y: imgY }}
           >
             <Tilt3D max={8}>
               <div className="relative w-full aspect-[1/1] rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-[0_8px_30px_rgba(2,6,23,0.08)]">
@@ -198,8 +210,7 @@ export default function HomePage() {
             viewport={{ once: true, margin: "-120px" }}
             className="mt-2 text-slate-600 text-sm"
           >
-            Engineering Platforms • Instrumentation Tooling • Web &amp; Cloud
-            Systems
+            Engineering Platforms • Instrumentation Tooling • Web &amp; Cloud Systems
           </motion.p>
         </div>
 
@@ -334,7 +345,14 @@ export default function HomePage() {
               Get in touch
             </Link>
           </Magnetic>
-   
+          <Magnetic strength={9}>
+            <Link
+              href="/projects"
+              className="rounded-xl px-6 sm:px-7 py-3 border border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
+            >
+              See portfolio
+            </Link>
+          </Magnetic>
         </motion.div>
       </section>
 
