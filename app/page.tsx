@@ -72,11 +72,11 @@ export default function HomePage() {
           className="hidden md:block absolute top-[62%] left-[-3%] w-[56%] max-w-[680px] h-16 bg-yellow-300 rounded-sm rotate-[-1.2deg] -z-10 pointer-events-none"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] items-center gap-8 md:gap-14">
+        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] items-center gap-3 md:gap-14">
           {/* left: search hero */}
           <motion.div variants={fadeUp} initial="hidden" animate="show">
-            <h1 className="text-[clamp(2.2rem,5.5vw,4.2rem)] font-black leading-[0.95] tracking-tight">
-              Engineering the future, one line of code at a time.
+            <h1 className="text-[clamp(1.1rem,3vw,3.7rem)] font-black leading-[0.95] tracking-tight">
+              Engineering the future, <br/>one line of code at a time.
             </h1>
             <p className="mt-3 text-slate-600 text-sm sm:text-base">
               <HeroText text={typed} />
@@ -90,7 +90,7 @@ export default function HomePage() {
                 { h: "Projects", v: "10+" },
                 { h: "Focus", v: "I&C/IT" },
               ].map((s, i) => (
-                <motion.div key={s.h} variants={scaleIn} initial="hidden" animate="show" custom={i}>
+                <motion.div key={s.h} variants={leftin} initial="hidden" animate="show" custom={i}>
                   <ShimmerCard className="p-4 bg-white">
                     <div className="text-2xl font-semibold text-blue-600">{s.v}</div>
                     <div className="text-xs text-slate-500">{s.h}</div>
