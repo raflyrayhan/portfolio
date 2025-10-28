@@ -58,8 +58,11 @@ export function NavBar() {
           href="/"
           aria-label="Go to home"
           className="inline-flex items-center gap-3"
-          onClick={() => window.dispatchEvent(new Event("rafly:logo-tap"))}
-        >
+          onClick={() => {
+            const ev = new CustomEvent("rafly:logo-tap");
+            window.dispatchEvent(ev);
+          }}
+>
           <Image
             src="/head.png"
             alt="Rafly — Home"

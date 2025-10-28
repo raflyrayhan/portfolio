@@ -8,6 +8,13 @@ const KONAMI = [
   "ArrowRight","ArrowLeft","ArrowRight","b","a",
 ];
 
+/** Custom event type (type-safe, no 'any') */
+declare global {
+  interface WindowEventMap {
+    "rafly:logo-tap": CustomEvent<void>;
+  }
+}
+
 export function EasterEggs() {
   const [active, setActive] = useState(false);
   const [burst, setBurst] = useState(0);
@@ -28,7 +35,7 @@ export function EasterEggs() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Logo-tap listener
+  // Logo-tap listener (type-safe)
   useEffect(() => {
     const onTap = () => {
       taps.current += 1;
@@ -39,8 +46,8 @@ export function EasterEggs() {
         trigger();
       }
     };
-    window.addEventListener("rafly:logo-tap" as any, onTap);
-    return () => window.removeEventListener("rafly:logo-tap" as any, onTap);
+    window.addEventListener("rafly:logo-tap", onTap);
+    return () => window.removeEventListener("rafly:logo-tap", onTap);
   }, []);
 
   function trigger() {
@@ -51,6 +58,7 @@ export function EasterEggs() {
 
   return (
     <>
+      {/* Banner */}
       <AnimatePresence>
         {active && (
           <motion.div
@@ -66,6 +74,7 @@ export function EasterEggs() {
         )}
       </AnimatePresence>
 
+      {/* Confetti */}
       <Confetti key={burst} fire={active} />
     </>
   );
