@@ -13,14 +13,14 @@ import { Spotlight } from "@/components/Spotlight";
 import { PrincipleRing } from "@/components/PrincipleRing";
 import { ProjectCards } from "@/components/ProjectCards";
 
-/* Copy tagline singkat (typewriter di subcopy) */
+/* Tagline (typewriter optional) */
 const MESSAGES = [
-  "",
+  "I simply </code>",
   "Cloud-native builder",
   "Instrument & Control + Software",
 ] as const;
 
-/* Anim presets (typed, TS-safe) */
+/* Anim presets */
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const EASE_SOFT: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
 
@@ -32,14 +32,16 @@ const fadeUp: Variants = {
     transition: { delay: i * 0.06, duration: 0.5, ease: EASE },
   }),
 };
-const leftin: Variants = {
+
+const leftIn: Variants = {
   hidden: { opacity: 0, x: -24 },
   show: (i: number = 0) => ({
     opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 2, ease: EASE },
+    x: 0,
+    transition: { delay: i * 0.06, duration: 0.6, ease: EASE },
   }),
 };
+
 const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.97 },
   show: (i: number = 0) => ({
@@ -60,7 +62,7 @@ export default function HomePage() {
       <NoiseOverlay />
       <Spotlight />
 
-      {/* =========================== HERO: SEARCH ENGINE =========================== */}
+      {/* =========================== HERO =========================== */}
       <section className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 pt-16 sm:pt-20 md:pt-24 pb-10">
         {/* color slabs (statis, no animation) */}
         <div
@@ -72,17 +74,17 @@ export default function HomePage() {
           className="hidden md:block absolute top-[62%] left-[-3%] w-[56%] max-w-[680px] h-16 bg-yellow-300 rounded-sm rotate-[-1.2deg] -z-10 pointer-events-none"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] items-center gap-3 md:gap-14">
-          {/* left: search hero */}
+        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] items-center gap-6 md:gap-14">
+          {/* left: copy */}
           <motion.div variants={fadeUp} initial="hidden" animate="show">
             <h1 className="text-[clamp(2rem,4.8vw,4rem)] font-black leading-[0.95] tracking-tight">
-              Engineering the future, <br/>one line of code at a time.
+              Engineering the future,<br /> one line of code at a time.
             </h1>
             <p className="mt-3 text-slate-600 text-sm sm:text-base">
               <HeroText text={typed} />
+              <span className="animate-blink" aria-hidden>▍</span>
             </p>
 
-           
             {/* quick stats */}
             <div className="mt-7 grid grid-cols-3 gap-3 sm:gap-4 text-center">
               {[
@@ -99,30 +101,40 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* primary CTAs */}
+            {/* primary CTA */}
             <div className="mt-7 flex flex-wrap gap-3">
-              <Magnetic strength={9}>
+              <Magnetic strength={10}>
                 <Link
                   href="/about"
-                  className="rounded-xl px-6 py-3 border border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
+                  className="rounded-xl px-6 py-3 border border-slate-300 hover:bg-slate-50
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30"
                 >
-                  This button is meant to be clicked
+                  About me
+                </Link>
+              </Magnetic>
+              <Magnetic>
+                <Link
+                  href="/projects"
+                  className="rounded-xl px-6 py-3 bg-blue-600 text-white hover:brightness-95
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
+                >
+                  See work
                 </Link>
               </Magnetic>
             </div>
           </motion.div>
 
           {/* right: feature art (tilt) */}
-          <motion.div variants={leftin} initial="hidden" animate="show" className="order-first md:order-none">
+          <motion.div variants={leftIn} initial="hidden" animate="show" className="order-first md:order-none">
             <Tilt3D>
-              <div className="relative w-full aspect-[10/10] rounded-1xl overflow-hidden ring-1 ring-slate-200 shadow-[0_8px_30px_rgba(2,6,23,0.08)]">
-                <Image src="/ilustrasi.png" alt="Rafly" fill className="object-cover" priority />
+              <div className="relative w-full aspect-[1/1] rounded-1xl overflow-hidden ring-1 ring-slate-200 shadow-[0_8px_30px_rgba(2,6,23,0.08)]">
+                <Image src="/ilustrasi.png" alt="Rafly illustration" fill className="object-cover" priority />
               </div>
             </Tilt3D>
           </motion.div>
         </div>
 
-        {/* stack marquee (lightweight) */}
+        {/* stack marquee */}
         <div className="mt-10 overflow-hidden">
           <div className="flex gap-8 whitespace-nowrap animate-[marq_18s_linear_infinite] text-xs sm:text-sm text-slate-600">
             {Array.from({ length: 2 }).map((_, k) => (
@@ -145,7 +157,7 @@ export default function HomePage() {
       <section className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 py-14">
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-1 w-36 rounded-full bg-gradient-to-r from-blue-600/70 to-cyan-400/70"
+          className="pointer-events-none absolute left:1/2 left-1/2 top-0 -translate-x-1/2 h-1 w-36 rounded-full bg-gradient-to-r from-blue-600/70 to-cyan-400/70"
         />
         <div className="text-center mb-8">
           <motion.h2 variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-120px" }} className="text-[clamp(1.35rem,3.2vw,2.25rem)] font-semibold">
@@ -240,10 +252,11 @@ export default function HomePage() {
               Get in touch
             </Link>
           </Magnetic>
+         
         </motion.div>
       </section>
 
-      {/* Marquee spacing fix on iOS */}
+      {/* iOS spacing */}
       <div className="pb-2" />
     </div>
   );

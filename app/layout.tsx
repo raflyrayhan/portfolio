@@ -1,15 +1,15 @@
 "use client";
-
 import "@/styles/globals.css";
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { EasterEggs } from "@/components/EasterEgg";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="scroll-smooth">{/* no dark class, no ThemeScript */}
+    <html lang="en" className="scroll-smooth">
       <body className="bg-white text-slate-900 antialiased selection:bg-blue-200/60">
         <SiteShell>{children}</SiteShell>
       </body>
@@ -25,6 +25,7 @@ function SiteShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
+      <EasterEggs />
       <main className="flex-1">
         <AnimatePresence mode="wait">
           {ready && (
